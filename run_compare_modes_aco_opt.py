@@ -18,8 +18,9 @@ run_compare_modes.py
      Сначала считаем истинный opt_cost для каждой пары (n, seed),
      затем пересчитываем rel_error всех строк как (cost / opt_true - 1).
      Поэтому библиотечный венгерский на всех графиках имеет rel_error = 0 (базовая линия).
-  2) ACO запускается со стандартными параметрами (единый набор для всех n, без заранее подобранных таблиц).
-     Мы НЕ переопределяем экспериментальный seed (0..repeats-1), чтобы инстанс матрицы совпадал у всех алгоритмов.
+  2) ACO запускается с фиксированными пер-размерными параметрами (таблица ниже).
+     Мы НЕ переопределяем экспериментальный seed (0..repeats-1). Переопределение seed из
+     таблицы ACO УБРАНО, чтобы инстанс матрицы совпадал у всех алгоритмов.
   3) Подписи графиков — на русском. Добавлены пояснения и подписи осей.
 """
 
@@ -52,22 +53,38 @@ ALGO_LABELS_RU = {
     "greedy": "Жадный",
 }
 
-# --- стандартные параметры ACO (единые для всех размеров) ---
-ACO_DEFAULT: Dict[str, Any] = dict(
-    ants=80,
-    alpha=1.0,
-    beta=3.0,
-    rho=0.10,
-    q0=0.20,
-    local_search="2swap",
-    ls_iters=200,
-    max_iters=1000,
-)
+# --- таблица параметров ACO по размерам (из твоего файла) ---
+ACO_PARAMS_TABLE = [
+    dict(n=25, ants=40, alpha=1.1, beta=4.1, rho=0.32, q0=0.32, local_search="2swap", ls_iters=203, max_iters=200),
+    dict(n=50, ants=27, alpha=1.4, beta=5.5, rho=0.26, q0=0.89, local_search="2swap", ls_iters=260, max_iters=200),
+    dict(n=75, ants=32, alpha=1.0, beta=5.3, rho=0.40, q0=0.28, local_search="2swap", ls_iters=87, max_iters=200),
+    dict(n=100, ants=24, alpha=1.4, beta=5.1, rho=0.35, q0=0.39, local_search="2swap", ls_iters=115, max_iters=200),
+    dict(n=150, ants=38, alpha=1.2, beta=5.7, rho=0.07, q0=0.54, local_search="2swap", ls_iters=55, max_iters=150),
+    dict(n=200, ants=39, alpha=1.4, beta=5.1, rho=0.31, q0=0.51, local_search="2swap", ls_iters=173, max_iters=150),
+    dict(n=300, ants=20, alpha=1.2, beta=4.3, rho=0.15, q0=0.81, local_search="2swap", ls_iters=191, max_iters=150),
+    dict(n=400, ants=23, alpha=1.4, beta=5.1, rho=0.33, q0=0.66, local_search="2swap", ls_iters=142, max_iters=150),
+    dict(n=600, ants=32, alpha=0.9, beta=2.6, rho=0.34, q0=0.78, local_search="2swap", ls_iters=40, max_iters=120),
+    dict(n=800, ants=43, alpha=0.8, beta=5.3, rho=0.19, q0=0.77, local_search="", ls_iters=0, max_iters=120),
+    dict(n=1200, ants=16, alpha=0.9, beta=4.8, rho=0.18, q0=0.36, local_search="2swap", ls_iters=38, max_iters=120),
+    dict(n=2000, ants=119, alpha=1.1, beta=5.5, rho=0.37, q0=0.21, local_search="2swap", ls_iters=54, max_iters=100),
+    dict(n=3000, ants=105, alpha=1.1, beta=2.2, rho=0.06, q0=0.70, local_search="2swap", ls_iters=75, max_iters=100),
+    dict(n=4000, ants=57, alpha=1.2, beta=5.6, rho=0.40, q0=0.17, local_search="", ls_iters=0, max_iters=100),
+]
+_ACO_BY_N: Dict[int, Dict[str, Any]] = {row["n"]: row for row in ACO_PARAMS_TABLE}
 
 
 def get_aco_params_for_n(n: int) -> Dict[str, Any]:
-    """Возвращает стандартные параметры ACO (не зависят от размера n)."""
-    return dict(ACO_DEFAULT)
+    """Возвращает параметры ACO для данного n. Если точного нет — ближайший меньший (иначе максимальный доступный)."""
+    if n in _ACO_BY_N:
+        return dict(_ACO_BY_N[n])
+    candidates = [k for k in _ACO_BY_N if k <= n]
+    if candidates:
+        use = max(candidates)
+        print(f"[WARN] Нет параметров ACO для n={n}; использую ближайший n={use}")
+        return dict(_ACO_BY_N[use])
+    use = min(_ACO_BY_N)
+    print(f"[WARN] Нет параметров ACO для n={n}; использую минимальный n={use}")
+    return dict(_ACO_BY_N[use])
 
 
 # ---------------- запуск «истины» и бенчмарка ----------------
@@ -235,8 +252,8 @@ def _save_agg_and_plots(df: pd.DataFrame, outdir: str, title_suffix: str = "") -
         plt.grid(True, which="both", ls="--", alpha=0.4)
         _safe_legend()
     out_png = os.path.join(outdir, f"rel_error_vs_n{('_' + title_suffix) if title_suffix else ''}.png")
-    plt.tight_layout()
-    plt.savefig(out_png)
+    plt.tight_layout();
+    plt.savefig(out_png);
     plt.close()
     print("Сохранён график:", out_png)
 
@@ -264,8 +281,8 @@ def _save_agg_and_plots(df: pd.DataFrame, outdir: str, title_suffix: str = "") -
         plt.grid(True, which="both", ls="--", alpha=0.4)
         _safe_legend()
     out_png2 = os.path.join(outdir, f"elapsed_vs_n{('_' + title_suffix) if title_suffix else ''}.png")
-    plt.tight_layout()
-    plt.savefig(out_png2)
+    plt.tight_layout();
+    plt.savefig(out_png2);
     plt.close()
     print("Сохранён график:", out_png2)
 
@@ -290,8 +307,8 @@ def _save_agg_and_plots(df: pd.DataFrame, outdir: str, title_suffix: str = "") -
                   + (f" — {title_suffix}" if title_suffix else ""))
         plt.grid(True, axis="y", ls="--", alpha=0.3)
         outpng = os.path.join(outdir, f"box_rel_error_n{n}{('_' + title_suffix) if title_suffix else ''}.png")
-        plt.tight_layout()
-        plt.savefig(outpng)
+        plt.tight_layout();
+        plt.savefig(outpng);
         plt.close()
     print("Сохранены boxplot-графики в", outdir)
 
@@ -315,8 +332,8 @@ def _save_agg_and_plots(df: pd.DataFrame, outdir: str, title_suffix: str = "") -
         plt.grid(True, which="both", ls="--", alpha=0.4)
         _safe_legend()
     out_png3 = os.path.join(outdir, f"speed_vs_accuracy{('_' + title_suffix) if title_suffix else ''}.png")
-    plt.tight_layout()
-    plt.savefig(out_png3)
+    plt.tight_layout();
+    plt.savefig(out_png3);
     plt.close()
     print("Сохранён график:", out_png3)
 
@@ -381,7 +398,7 @@ def parse_sizes_arg(s: str) -> List[int]:
 
 
 def main():
-    ap = argparse.ArgumentParser(description="Сравнение ACO vs Венгерский (2 режима); ACO со стандартными параметрами")
+    ap = argparse.ArgumentParser(description="Сравнение ACO vs Венгерский (2 режима); ACO с пер-размерными параметрами")
     ap.add_argument("--sizes", type=str, default=",".join(map(str, DEFAULT_SIZES)),
                     help="Список n через запятую")
     ap.add_argument("--repeats", type=int, default=5, help="Число повторов на каждый n (seeds = 0..repeats-1)")
