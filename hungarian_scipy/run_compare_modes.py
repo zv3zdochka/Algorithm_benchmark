@@ -235,10 +235,10 @@ def main():
                 plt.plot(sub['n'], sub['rel_error'], marker='o', linestyle='--' if mode_name == 'modeB' else '-',
                          label=f"{algo}-{mode_name}")
         plt.xscale('log' if comb['n'].max() / comb['n'].min() > 20 else 'linear')
-        plt.xlabel('n')
-        plt.ylabel('mean rel_error')
+        plt.xlabel('n');
+        plt.ylabel('mean rel_error');
         plt.title('ModeA vs ModeB rel_error by algo')
-        plt.legend()
+        plt.legend();
         plt.grid(True)
         out_png = os.path.join(args.outroot, "modeA_vs_modeB_rel_error.png")
         plt.tight_layout();
