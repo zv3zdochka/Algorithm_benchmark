@@ -18,10 +18,10 @@ ALGOS = ["aco", "hungarian_manual", "hungarian_scipy", "greedy", "all"]
 
 # Человечные подписи алгоритмов на русском
 ALGO_LABELS_RU = {
-    "aco": "Муравьиный алгоритм (ACO)",
-    "hungarian_manual": "Венгерский (собственная реализация)",
-    "hungarian_scipy": "Венгерский (библиотечный, SciPy)",
-    "greedy": "Жадный алгоритм",
+    "aco": "Муравьиный алг-м",
+    "hungarian_manual": "Венгерский",
+    "hungarian_scipy": "Венгерский SciPy",
+    "greedy": "Жадный",
 }
 
 
