@@ -213,3 +213,11 @@ python -m bench.benchmark_unified --algo aco --n 200 --time_limit 1.0 --seed 42 
 ```bash
 python -m bench.benchmark_unified --algo all --csv data/tiny_4x4_diagonal.csv --time_limit 0.05 --outdir out
 ```
+
+# Сравнение алгоритмов с оптимизированным АСО и без него. 
+
+```
+python run_compare_modes.py --sizes 25,50,100 --time_A 100 --time_B 0.5 --outroot out_3
+
+python run_compare_modes_aco_opt.py --sizes 25,50,100,300,500,1000 --time_A 250 --time_B 1 --outroot out_1111_opt
+```
