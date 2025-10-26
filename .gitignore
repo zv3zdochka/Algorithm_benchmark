@@ -169,3 +169,8 @@ cython_debug/
 /README_RU.md
 /tests/
 /project.zip
+/out_3/
+/out_300s_0p5s/
+/out_600s/
+/out_1111/
+/out_1111_opt/
